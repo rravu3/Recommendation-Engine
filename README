@@ -1,0 +1,9 @@
+Recommendation Engine 0.1
+=============================
+
+My goal is to build a simple recommendation engine where anyone can play with their datasets.
+Though I have tested it on Movielens dataset of 1 million ratings, I don't think the current
+version will be able to process any realistic size dataset. The reason I think is that all the
+data that is the ratings and user and movie information is stored in the memory. 
+
+If you find any issues, Please do email me at rahulravu96@gmail.com
