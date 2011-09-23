@@ -7,3 +7,14 @@ version will be able to process any realistic size dataset. The reason I think i
 data that is the ratings and user and movie information is stored in the memory. 
 
 If you find any issues, Please do email me at rahulravu96@gmail.com
+
+Input Format
+============================
+
+The input format for the recommendation engine is of the form:-
+user_id,item_id,rating,timestamp
+
+the separator can be anything and the timestamp attribute is optional.
+
+It is assumed that the user range from 1 to n and the items range
+from 1 to m
