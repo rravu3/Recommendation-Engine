@@ -6,6 +6,7 @@ import common
 import numpy
 import numpy.random
 import math
+import Utilities
 
 class GenericRecommendationEngine:
   """ This is an abstract base class representing the common methods that are present in all recommendation engines """
@@ -68,6 +69,7 @@ class FactorizationBasedEngine(GenericRecommendationEngine):
       total_error=math.sqrt(total_error/len(test_data))
       print 'Test Error after iteration',(i+1),' is ',total_error
     print 'Training Complete' 
+    self.trained=True
      
   def splitData(self,data,training_split):
     training_data={}
@@ -97,18 +99,47 @@ class FactorizationBasedEngine(GenericRecommendationEngine):
       print 'use the train method to obtain an initial set of users without this addition will not make any sense'
 
   def computeRating(user_id,item_id):
-    return 0.0
+    if self.trained:
+      user_factor=self.users[user_id].getFactor()
+      item_factor=self.items[item_id].getFactor()
+      rating=(user_factor*item_factor).sum()
+      return rating
+    else:
+      print 'Recommendation Engine hasn\'t been trained yet. Please train it.'
+      return 0.0
+
+  def getTopNItemsForUser(self,user_id,n=10):
+    if self.trained:
+      user_factor=self.users[user_id].getFactor()
+      preferences=[]
+      for item in self.items.keys():
+        item_factor=self.items[item].getFactor()
+        temp=(user_factor*item_factor).sum()
+        preferences.append((item,temp))
+      preferences=sorted(preferences,reverse=True,key=Utilities.valueSelector)
+      result=[]
+      if n > len(self.items):
+        n=len(self.items)
+      for i in range(n):
+        result.append(preferences[i][0])
+      return result
+    else:
+      print 'Recommendation Engine hasn\'t been trained yet. Please train it.'
+      return None
 
 def main():
   ratings=Ratings.Ratings('/home/rahulravu/python_experiments/data/ml-1m/ratings.dat','::')
   engine=FactorizationBasedEngine()
   training_parameters={}
-  training_parameters['iterations']=10
+  training_parameters['iterations']=500
   training_parameters['dimensions']=10
   training_parameters['alpha']=0.01
   training_parameters['regularizer']=0.001
-  training_parameters['training_split']=0.7
+  training_parameters['training_split']=0.5
   engine.train(ratings,training_parameters)
+  list_of_items=engine.getTopNItemsForUser(1)
+  print 'Top Ten items for the current user are '
+  print list_of_items
 
 
 if __name__=='__main__':
