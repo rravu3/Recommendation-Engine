@@ -25,16 +25,21 @@ class GenericRecommendationEngine:
 
 
 class FactorizationBasedEngine(GenericRecommendationEngine):
-
+  """ This class implements a Matrix factorization based recommendation engine """
   def __init__(self):
     self.trained=False
 
   def train(self,ratings,training_parameters):
+    """ ratings object contains the dataset upon which training will be performed. """
+    """ training_parameters is a dictionary containing various training parameters like learning_rate, regularization_rate, number of iterations etc. """
     print 'Will now train the system on the ratings data'
     self.users={}
     self.items={}
+
     total_users=ratings.getTotalUsers()
     total_items=ratings.getTotalItems()
+    
+    #initialize user and item factors 
     factor_dimension=training_parameters['dimensions']
     for i in range(1,total_users+1):
       initial_factor=numpy.random.uniform(0.0,1.0,factor_dimension)
@@ -42,12 +47,15 @@ class FactorizationBasedEngine(GenericRecommendationEngine):
     for i in range(1,total_items+1):
       initial_factor=numpy.random.uniform(0.0,1.0,factor_dimension)
       self.items[i]=common.Component(i,initial_factor)
+
+    #compute the training and test splits and initialize few training parameters
     data=ratings.getRatingsData()
     regularizer=training_parameters['regularizer']
     update_rate=training_parameters['alpha']
     split=self.splitData(data,training_parameters['training_split'])
     training_data=split[0]
     test_data=split[1]
+
     for i in range(training_parameters['iterations']):
       print 'At Iteration',(i+1)
       for key in training_data.keys():
@@ -55,11 +63,17 @@ class FactorizationBasedEngine(GenericRecommendationEngine):
         item_factor=self.items[key[1]].getFactor()
         true_rating=training_data[key][0]
         prediction=(user_factor*item_factor).sum()
+
+        #compute the error for the particular training instance
         error=true_rating-prediction
+
+        #update the user and item factors 
         temp=user_factor+(update_rate*error*item_factor)-(regularizer*user_factor)
         self.users[key[0]].setFactor(temp)
         temp=item_factor+(update_rate*error*user_factor)-(regularizer*item_factor)
         self.items[key[1]].setFactor(temp)
+      
+      #compute the test error for the iteration
       total_error=0.0
       for key in test_data.keys():
         user_factor=self.users[key[0]].getFactor()
@@ -72,6 +86,7 @@ class FactorizationBasedEngine(GenericRecommendationEngine):
     self.trained=True
      
   def splitData(self,data,training_split):
+    """ A method for computing the training and test splits. """
     training_data={}
     test_data={}
     random_vals=numpy.random.uniform(0.0,1.0,len(data))
@@ -127,20 +142,5 @@ class FactorizationBasedEngine(GenericRecommendationEngine):
       print 'Recommendation Engine hasn\'t been trained yet. Please train it.'
       return None
 
-def main():
-  ratings=Ratings.Ratings('/home/rahulravu/python_experiments/data/ml-1m/ratings.dat','::')
-  engine=FactorizationBasedEngine()
-  training_parameters={}
-  training_parameters['iterations']=500
-  training_parameters['dimensions']=10
-  training_parameters['alpha']=0.01
-  training_parameters['regularizer']=0.001
-  training_parameters['training_split']=0.5
-  engine.train(ratings,training_parameters)
-  list_of_items=engine.getTopNItemsForUser(1)
-  print 'Top Ten items for the current user are '
-  print list_of_items
-
-
-if __name__=='__main__':
-  main()
+  def isTrained(self):
+    return self.trained
