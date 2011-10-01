@@ -18,3 +18,5 @@ the separator can be anything and the timestamp attribute is optional.
 
 It is assumed that the user range from 1 to n and the items range
 from 1 to m
+
+For more information on usage please refer to Example.py for a sample usage.
